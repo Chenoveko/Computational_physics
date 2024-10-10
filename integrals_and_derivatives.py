@@ -76,7 +76,6 @@ def romberg_rule(f: 'function', a: 'init point', b: 'end point', eps_obj: 'error
         R1 = R2
     return R1[-1]
 
-
 def simpson_rule_adaptive(f: 'function', a: 'init point', b: 'end point', eps_obj: 'error target') -> 'Value of the integral':
     eps = 1
     N = 2
@@ -110,9 +109,13 @@ print("Romberg rule ",romberg_rule(f,0,1,1.0e-6))
 
 def gaussian_quadrature(f: 'function', a: 'init point', b: 'end point', N: 'number of points') -> 'Value of the integral':
     x, w = gaussxwab(N,a,b)
-    Ig = 0.0
+    I = 0.0
     for k in range(N):
-        Ig += (w[k] *
-               f(x[k]))
+        I += (w[k] * f(x[k]))
+    return I
+
+print("Gaussian quadrature ",gaussian_quadrature(g,0,2,3))
+
+
 
 
