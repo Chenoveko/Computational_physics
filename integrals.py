@@ -117,5 +117,42 @@ def gaussian_quadrature(f: 'function', a: 'init point', b: 'end point', N: 'numb
 print("Gaussian quadrature ",gaussian_quadrature(g,0,2,3))
 
 
+"""
+Chuleta:
+
+1) Si la función es suficientemente suave los métodos de orden superior Romberg, Newton-Cotes
+o la cuadratura Gaussiana permiten obtener gran precisión con pocos puntos.
+
+2) Si la función no es suave, los métodos más sencillos, como el trapezoidal, suelen ser el camino
+adecuado.
+
+- Método Trapezoidal:
+    • sencillo de programar (respuesta rápida aunque menos precisa).
+    • usa puntos igualmente espaciados (para utilizar en datos de laboratorio).
+    • útil para funciones con problemas (singularidades, ruido,. . . ).
+    • en su forma de paso adaptado podemos garantizar una precisión a costa de más tiempo de computo.
+    
+- Método de Simpson:
+    • sencillo de programar (respuesta rápida aunque menos precisa).
+    • usa puntos equiespaciados (para utilizar en datos de laboratorio).
+    • mayor precisión que el trapezoidal con los mismos puntos.
+    • mayor orden de la aproximación del integrando (problemas si la función tiene ruido,. . . ).
+    • en su forma de paso adaptado podemos garantizar una precisión, con posibles problemas si la función no es lo suficientemente suave.
+
+- Método de Romberg:
+    • con puntos igualmente espaciados es el mejor con órdenes altos de aproximación.
+    • aproximación excepcional con pocos puntos.
+    • garantiza una precisión con estimación del error.
+    • problemas para funciones que se comporten mal, con ruido, singularidades,. . .
+    • muy útil para funciones suaves cuya forma puede ser determinada por pocos puntos.
+    
+- Cuadratura Gaussiana:
+    • puntos no equiespaciados.
+    • similares ventajas e inconvenientes que el método de Romberg.
+    • complejidad: cálculo de los puntos y los pesos.
+    • mayor orden de aproximación.
+"""
+
+
 
 
