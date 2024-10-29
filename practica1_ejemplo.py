@@ -14,6 +14,7 @@ y = np.linspace(-1, 1, N)
 
 xx, yy = np.meshgrid(x, y)
 
+
 def distribucion_carga(x, y):
     rho_0 = 100
     # Cambio coordenadas: cartesianas -> polares
@@ -22,6 +23,7 @@ def distribucion_carga(x, y):
         return rho_0 * np.exp(-1 / (1 - r ** 3)) * np.sin(8 * phi)
     else:
         return 0
+
 
 # Vectorizar la función para que acepte arrays
 distribucion_carga_vectorizada = np.vectorize(distribucion_carga)
@@ -45,8 +47,10 @@ plt.show()
 
 from gaussxw import gaussxwab
 
-N_cuadraturas = 10  # Número de puntos de la cuadratura
+N_cuadraturas = 20
+# Número de puntos de la cuadratura
 ptos, w = gaussxwab(N_cuadraturas, -1, 1)  # puntos y pesos de la cuadratura gaussiana
+
 
 def potencial_electrico(x: 'Posición x', y: 'Posición y') -> 'Potencial eléctrico':
     permitividad_vacio = 8.85e-12
@@ -55,8 +59,9 @@ def potencial_electrico(x: 'Posición x', y: 'Posición y') -> 'Potencial eléct
     for i in range(N_cuadraturas):
         for j in range(N_cuadraturas):
             I += w[i] * w[j] * distribucion_carga(ptos[i], ptos[j]) / np.sqrt(
-                (x - ptos[i]) ** 2 + (y - ptos[i] - y) ** 2)
+                (x - ptos[i]) ** 2 + (y - ptos[j]) ** 2)
     return I * 1 / (4 * np.pi * permitividad_vacio)
+
 
 # ----------------------------------------Ejercicio 3------------------------------------------------
 N = 200
@@ -69,17 +74,48 @@ potencial_electrico_vectorizado = np.vectorize(potencial_electrico)
 
 # Calcular la distribución de carga en la malla
 mi_potencial = potencial_electrico_vectorizado(xx, yy)
-print(mi_potencial)
 
 # Dibujo el potencial eléctrico en el meshgrid con los límites de potencial
-v_max, v_min = 10e-11, -10e11
-plt.imshow(mi_potencial, extent=(-2, 2, -2, 2), vmax=v_max, vmin=v_min)
+v_max, v_min = 10e-1, -10e11
+plt.imshow(mi_potencial, extent=(-2, 2, -2, 2), vmin=v_min, vmax=v_max)
 plt.colorbar(label="Potencial eléctrico")  # Agregar etiqueta a la barra de color
 plt.title("Potencial eléctrico")  # Título del gráfico
 plt.xlabel("x (eje de las abscisas)")  # Etiqueta para el eje x
 plt.ylabel("y (eje de las ordenadas)")  # Etiqueta para el eje y
 plt.show()
 
+
 # ----------------------------------------Ejercicio 4------------------------------------------------
+def campo_electrico(x, y, h=1e-5):
+    Ex = -1 * (potencial_electrico(x + h / 2, y) - potencial_electrico(x - h / 2, y)) / h
+    Ey = -1 * (potencial_electrico(x, y + h / 2) - potencial_electrico(x, y - h / 2)) / h
+    return Ex, Ey
+
+
+N = 60
+x = np.linspace(-2, 2, N)
+y = np.linspace(-2, 2, N)
+xx, yy = np.meshgrid(x, y)
+
+# Vectorizar la función para que acepte arrays
+campo_electrico_vectorizado = np.vectorize(campo_electrico)
+
+# Calcular el campo eléctrico en  la malla
+Ex, Ey = campo_electrico_vectorizado(xx, yy)
+
 # ----------------------------------------Ejercicio 5------------------------------------------------
-# ----------------------------------------Ejercicio 6------------------------------------------------
+plt.quiver(xx, yy, Ex, Ey)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title("Campo Eléctrico derivado del Potencial")
+plt.show()
+
+# ----------------------------------------Ejercicio 6 (extra)------------------------------------------------
+C = 10e11
+Ex[abs(Ex) > C] = C
+Ey[abs(Ey) > C] = C
+plt.quiver(xx, yy, Ex, Ey)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title("Campo Eléctrico derivado del Potencial (evitando errores numéricos)")
+plt.show()
