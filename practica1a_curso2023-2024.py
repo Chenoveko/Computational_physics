@@ -14,7 +14,7 @@ def densidad_carga(x: 'Posición x', y: 'Posición y',
                    rho_0: 'Factor de escala' = 100) -> 'Densidad de carga eléctrica':
     # Cambio coordenadas: cartesianas -> polares
     r, phi = cartesianas_2_polares(x, y)
-    if 1 >= r >= 0:
+    if 1 >= r >= 0:  # Por este if voy a tener que vectorizar la función para poder representarla en  el meshgrid
         return rho_0 * np.exp(-1 / (1 - r ** 3)) * np.sin(8 * phi)
     else:
         return 0
@@ -72,7 +72,7 @@ def potencial_electrico(x: 'Posición x', y: 'Posición y') -> 'Potencial eléct
 
 """
 IMPORTANTE: No hace falta vectorizar el potencial, ya esta vectorizado porque solo estamos utilizando
-operadores básicos (+,-,*,/,**...) y funciones de numpy. Si se vectoriza se vuelve muy ineficiente,.
+operadores básicos (+,-,*,/,**...) y funciones de numpy. Si se vectoriza se vuelve muy ineficiente.
 """
 # Creamos un grid para la representación del potencial
 N = 200
@@ -115,6 +115,7 @@ Ey[0, :] = -(mi_potencial[1, :] - mi_potencial[0, :]) / h
 Ey[N - 1, :] = -(mi_potencial[:, N - 1] - mi_potencial[:, N - 2]) / h
 Ex[:, 1:N - 1] = -(mi_potencial[:, 2:N] - mi_potencial[:, 0:N - 2]) / (2 * h)
 Ey[1:N - 1, :] = -(mi_potencial[2:N, :] - mi_potencial[0:N - 2, :]) / (2 * h)
+
 # ----------------------------------------Ejercicio 5------------------------------------------------
 plt.quiver(xx, yy, Ex, Ey)
 plt.xlabel('x')
