@@ -10,11 +10,9 @@ import matplotlib.pyplot as plt
 
 
 # Definimos la función de la densidad de carga
-def densidad_carga(x: 'Posición x', y: 'Posición y',
-                   rho_0: 'Factor de escala' = 100) -> 'Densidad de carga eléctrica':
-    # Cambio coordenadas: cartesianas -> polares
-    r, phi = cartesianas_2_polares(x, y)
-    if 1 >= r >= 0:  # Por este if voy a tener que vectorizar la función para poder representarla en  el meshgrid
+def densidad_carga(r, phi):
+    rho_0 = 100
+    if r <= 1:  # Por este if voy a tener que vectorizar la función para poder representarla en  el meshgrid
         return rho_0 * np.exp(-1 / (1 - r ** 3)) * np.sin(8 * phi)
     else:
         return 0
@@ -26,13 +24,14 @@ xmax = 1
 xmin = -1
 x = np.linspace(xmin, xmax, N)
 y = np.linspace(xmin, xmax, N)
-xx, yy = np.meshgrid(x, y)
+X, Y = np.meshgrid(x, y)
+R, PHY = cartesianas_2_polares(X, Y)
 
 # Vectorizar la función para que acepte arrays
 densidad_carga_vectorizada = np.vectorize(densidad_carga)
 
 # Calcular la distribución de carga en la malla
-mi_distribucion = densidad_carga_vectorizada(xx, yy)
+mi_distribucion = densidad_carga_vectorizada(R, PHY)
 
 # Dibujo la distribución de carga en el meshgrid con el patron de color seismic
 plt.imshow(mi_distribucion, origin='lower', cmap='seismic', extent=(-1, 1, -1, 1))
@@ -48,23 +47,25 @@ plt.show()
  - Integro solo donde hay carga -> r :[0,1]
 """
 
-from gaussxw import gaussxw
-
-# Definimos constantes y calculamos los zeros del polinomio de Legendre y los␣ pesos en el intervalo canónico
-N_cuadraturas = 300  # Número de puntos de la cuadratura
-ptos, w = gaussxw(N_cuadraturas)  # puntos y pesos de la cuadratura gaussiana canónica
+from gaussxw import gaussxwab
 
 
 # Definimos el potencial calculando la integral con la cuadratura gaussiana
-def potencial_electrico(x: 'Posición x', y: 'Posición y') -> 'Potencial eléctrico':
+def potencial_electrico(r):
     permitividad_vacio = 8.85e-12
-    # Integral bidimensional rectangular
+    # Definimos constantes y calculamos los zeros del polinomio de Legendre y los pesos
+    N_cuadraturas = 50  # Número de puntos de la cuadratura
+    r_prima, w_r = gaussxwab(N_cuadraturas, 0, 1)
+    phy_prima, w_phy = gaussxwab(N_cuadraturas, 0, 2 * np.pi)
+
+    def integrando(r, r_prima, phy_prima):
+        return densidad_carga_vectorizada(r_prima, phy_prima) * r / abs(r - r_prima)
+
+    # Integral bidimensional
     I = 0.0
     for i in range(N_cuadraturas):
         for j in range(N_cuadraturas):
-            carga = densidad_carga(ptos[i], ptos[j])
-            distancia = np.sqrt((x - ptos[i]) ** 2 + (y - ptos[j]) ** 2)
-            I += w[i] * w[j] * carga / distancia
+            I += w_r[i] * w_phy[j] * integrando(r, r_prima[i], phy_prima[j])
     return I / (4 * np.pi * permitividad_vacio)
 
 
@@ -74,16 +75,16 @@ def potencial_electrico(x: 'Posición x', y: 'Posición y') -> 'Potencial eléct
 IMPORTANTE: No hace falta vectorizar el potencial, ya esta vectorizado porque solo estamos utilizando
 operadores básicos (+,-,*,/,**...) y funciones de numpy. Si se vectoriza se vuelve muy ineficiente.
 """
+
 # Creamos un grid para la representación del potencial
 N = 200
 xmax = 2
 xmin = -2
 x = np.linspace(xmin, xmax, N)
 y = np.linspace(xmin, xmax, N)
-xx, yy = np.meshgrid(x, y)
-
-# Calcular la distribución de carga en la malla
-mi_potencial = potencial_electrico(xx, yy)
+X, Y = np.meshgrid(x, y)
+R, PHY = cartesianas_2_polares(X, Y)
+mi_potencial = potencial_electrico(R)
 
 # Dibujo el potencial eléctrico en el meshgrid con los límites de potencial
 v_max, v_min = 10e11, -10e11
@@ -102,22 +103,18 @@ xmax = 2
 xmin = -2
 x = np.linspace(xmin, xmax, N)
 y = np.linspace(xmin, xmax, N)
-xx, yy = np.meshgrid(x, y)
+X, Y = np.meshgrid(x, y)
+R, PHY = cartesianas_2_polares(X, Y)
 
-# Calcular el campo eléctrico en  la malla
-mi_potencial = potencial_electrico(xx, yy)
-h = (xmax - xmin) / N
-Ex = np.zeros([N, N])
-Ey = np.zeros([N, N])
-Ex[:, 0] = -(mi_potencial[:, 1] - mi_potencial[:, 0]) / h
-Ex[:, N - 1] = -(mi_potencial[:, N - 1] - mi_potencial[:, N - 2]) / h
-Ey[0, :] = -(mi_potencial[1, :] - mi_potencial[0, :]) / h
-Ey[N - 1, :] = -(mi_potencial[:, N - 1] - mi_potencial[:, N - 2]) / h
-Ex[:, 1:N - 1] = -(mi_potencial[:, 2:N] - mi_potencial[:, 0:N - 2]) / (2 * h)
-Ey[1:N - 1, :] = -(mi_potencial[2:N, :] - mi_potencial[0:N - 2, :]) / (2 * h)
+# Calcular el campo eléctrico en la malla
+from derivatives import centered_derivative
+
+E_r = centered_derivative(potencial_electrico, R)
+E_x = E_r * np.cos(PHY)
+E_y = E_r * np.sin(PHY)
 
 # ----------------------------------------Ejercicio 5------------------------------------------------
-plt.quiver(xx, yy, Ex, Ey)
+plt.quiver(X, Y, E_x, E_y)
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title("Campo Eléctrico derivado del Potencial")
@@ -125,11 +122,11 @@ plt.show()
 
 # ----------------------------------------Ejercicio 6 (extra)------------------------------------------------
 C = 10e11
-Ex[Ex > C] = C
-Ex[Ex < -C] = -C
-Ey[Ey > C] = C
-Ey[Ey < -C] = -C
-plt.quiver(xx, yy, Ex, Ey)
+E_x[E_x > C] = C
+E_x[E_x < -C] = -C
+E_y[E_y > C] = C
+E_y[E_y < -C] = -C
+plt.quiver(X, Y, E_x, E_y)
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title("Campo Eléctrico derivado del Potencial (evitando errores numéricos)")
