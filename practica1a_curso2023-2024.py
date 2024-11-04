@@ -54,7 +54,7 @@ from gaussxw import gaussxwab
 def potencial_electrico(r):
     permitividad_vacio = 8.85e-12
     # Definimos constantes y calculamos los zeros del polinomio de Legendre y los pesos
-    N_cuadraturas = 50  # Número de puntos de la cuadratura
+    N_cuadraturas = 5  # Número de puntos de la cuadratura
     r_prima, w_r = gaussxwab(N_cuadraturas, 0, 1)
     phy_prima, w_phy = gaussxwab(N_cuadraturas, 0, 2 * np.pi)
 
@@ -109,7 +109,7 @@ R, PHY = cartesianas_2_polares(X, Y)
 # Calcular el campo eléctrico en la malla
 from derivatives import centered_derivative
 
-E_r = centered_derivative(potencial_electrico, R)
+E_r = -1 * centered_derivative(potencial_electrico, R)
 E_x = E_r * np.cos(PHY)
 E_y = E_r * np.sin(PHY)
 
