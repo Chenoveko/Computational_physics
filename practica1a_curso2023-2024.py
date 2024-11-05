@@ -54,7 +54,7 @@ from gaussxw import gaussxwab
 def potencial_electrico(r):
     permitividad_vacio = 8.85e-12
     # Definimos constantes y calculamos los zeros del polinomio de Legendre y los pesos
-    N_cuadraturas = 5  # Número de puntos de la cuadratura
+    N_cuadraturas = 10  # Número de puntos de la cuadratura
     r_prima, w_r = gaussxwab(N_cuadraturas, 0, 1)
     phy_prima, w_phy = gaussxwab(N_cuadraturas, 0, 2 * np.pi)
 
