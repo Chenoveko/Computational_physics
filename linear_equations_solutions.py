@@ -3,7 +3,7 @@ import numpy as np
 
 # --------------------------------------- Metodo de Gauss----------------------------------------------------------------
 def gaussian_elimination(A: 'Coeficients matrix',
-                         B: 'Column vector') -> 'Solution of the system using gaussian elimination':
+                         B: 'Column vector') -> 'Solution of the system using gaussian elimination and matrix extendida triangular':
     """
     La idea del metodo es utilizar operaciones elementales de matrices que permitan transformar
     nuestro sistema de ecuaciones inicial en uno donde la matriz A sea triangular.

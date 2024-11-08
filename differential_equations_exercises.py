@@ -155,3 +155,50 @@ plt.ylabel("Miles de individuos")
 plt.legend()
 plt.show()
 # -----------------------------------------Second order ODE-------------------------------------------------------------
+"""
+Ejercicio 7.6: el péndulo no lineal
+Escribir un programa que permita describir el movimiento de un péndulo no lineal durante
+4 periodos, con l = 10 cm que parte del reposo con un ángulo inicial de q = 179º usando el
+método de Runge-Kutta de cuarto orden.
+
+    d^2theta/dt^2 = -g/l * sin(theta) -> lo convertimos en un sistema
+    
+    dtheta/dt = omega
+    domega/dt = -g/l * sin(theta)
+"""
+
+def pendulo(r):
+    theta = r[0]
+    omega = r[1]
+    f_theta = omega
+    f_omega = -g / l * np.sin(theta)
+    return np.array([f_theta, f_omega], float)
+
+a=0
+b=10
+N=1000
+g,l = 9.81,0.1
+r0=np.array([np.pi*179/180,0],float) # condiciones iniciales
+tp, thetap ,omegap = runge_kutta_4_system_method(pendulo, r0, a, b, N)
+xp = l*np.sin(thetap)
+yp = -l*np.cos(thetap)
+
+plt.plot(tp,thetap,"red")
+plt.plot(tp,thetap,"b.")
+plt.title("Pendulo no lineal")
+plt.xlabel("t")
+plt.ylabel("$\\theta$")
+plt.show()
+
+plt.plot(tp,omegap,"red")
+plt.plot(tp,omegap,"b.")
+plt.title("Pendulo no lineal")
+plt.xlabel("t")
+plt.ylabel("$\\omega$")
+plt.show()
+
+plt.plot(xp,yp)
+plt.title("Pendulo no lineal")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
