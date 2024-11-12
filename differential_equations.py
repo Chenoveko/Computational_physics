@@ -102,7 +102,7 @@ def runge_kutta_4_system_method(system_function: 'system function as array', r0:
     tp = np.linspace(a, b, N)
     xp = []
     yp = []
-    r = r0
+    r = np.copy(r0)
     if count_arguments(system_function) == 2:
         for t in tp:
             xp.append(r[0])
@@ -123,6 +123,49 @@ def runge_kutta_4_system_method(system_function: 'system function as array', r0:
             r += (k1 + 2 * k2 + 2 * k3 + k4) / 6
     return tp, np.array(xp), np.array(yp)
 
-# -----------------------------------------Second order ODE-------------------------------------------------------------
-0
 
+# -----------------------------------------Second order ODE-------------------------------------------------------------
+
+
+# -----------------------------------------Adaptive methods--------------------------------------------------------------
+
+def runge_kutta_4_system_adaptive_method(system_function: 'system function as array', r0: 'initial conditions array',
+                                         tmax: 'end point', delta: 'precision objetivo',
+                                         h0: 'paso inicial') -> 'Solution of the ODE system':
+    r = np.copy(r0)
+    xp = [r[0]]
+    yp = [r[1]]
+    t = 0
+    h = h0
+    while t < tmax:
+        # hacemos un paso grande
+        k1 = 2 * h * system_function(r)
+        k2 = 2 * h * system_function(r + k1 / 2)
+        k3 = 2 * h * system_function(r + k2 / 2)
+        k4 = 2 * h * system_function(r + k3)
+        r1 = r + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        # hacemos dos pasos pequeños
+        k1 = h * system_function(r)
+        k2 = h * system_function(r + k1 / 2)
+        k3 = h * system_function(r + k2 / 2)
+        k4 = h * system_function(r + k3)
+        r2 = r + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        k1 = h * system_function(r2)
+        k2 = h * system_function(r2 + k1 / 2)
+        k3 = h * system_function(r2 + k2 / 2)
+        k4 = h * system_function(r2 + k3)
+        r2 += (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        # calculamos el valor del ratio de precisiones rho
+        dx = r1[0] - r2[0]  # error en x
+        dy = r1[1] - r2[1]  # error en y
+        rho = 30 * h * delta / np.sqrt(dx ** 2 + dy ** 2)
+        # calculamos el nuevo valor de t,h y r
+        if rho > 1:
+            t += 2 * h
+            h *= min(rho ** 0.25, 2.0)
+            r = r2
+            xp.append(r[0])
+            yp.append(r[1])
+        else:
+            h *= rho ** 0.25
+    return xp, yp
