@@ -22,7 +22,7 @@ def QR_factorization(A):
     return Q, R
 
 
-def QR_diagonalization(A, eps):
+def QR_diagonalization(A:'Matrix', eps:'precision') -> 'D contiene los autovalore en su diagonal y V los autovectores':
     N = len(A)
     V = np.identity(N, float)  # Empezamos con la identidad
     delta = 1.0

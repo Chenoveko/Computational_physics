@@ -169,3 +169,86 @@ def runge_kutta_4_system_adaptive_method(system_function: 'system function as ar
         else:
             h *= rho ** 0.25
     return xp, yp
+
+# -----------------------------------------Other methods----------------------------------------------------------------
+"""
+Método del salto de rana:
+- al cabo de un ciclo completo la energía del sistema calculada con el método
+del salto de la rana debe volver al mismo valor y seguiría así para siempre, cosa que no
+sucede con el método de Runge-Kutta
+- el método del salto de la rana puede ser muy útil para para estudiar sistemas que
+conservan la energía en periodos de tiempo grandes. Mientras que para un Runge-Kutta
+un sistema planetario o un péndulo podrían acabar parándose, la solución obtenida con el
+método del salto de la rana podría durar siempre.
+"""
+def leapfrog_method(f: 'f(x,t)', r1: 'initial condition', a: 'initial point', b: 'end point',
+                         h: 'paso') -> 'ODE solution':
+    # discretizamos nuestro intervalo
+    tp = np.arange(a, b, h)
+    xp = []
+    r2 = r1 + h * f(r1) / 2
+    # loop principal
+    for t in tp:
+        xp.append(r1[0])
+        r1 += h * f(r2)
+        r2 += h * f(r1)
+    return tp,xp
+
+def verlet_method(f: 'f(x,t)',T:'Energia cinetica',V:'Energia potencial', r0: 'initial condition',v0:'initial condition', a: 'initial point', b: 'end point',
+                         h: 'paso') -> 'ODE solution':
+    r = np.copy(r0)
+    v = np.copy(v0)
+    vmitad = v + 0.5 * h * f(r)
+    tp = np.arange(a, b, h)
+    xp = []
+    yp = []
+    Vp = []
+    Tp = []
+    Ep = []
+    # bucle principal
+    for t in tp:
+        xp.append(r[0])
+        yp.append(r[1])
+        Vp.append(V(r))
+        Tp.append(T(v))
+        Ep.append(V(r) + T(v))
+        r += h * vmitad
+        k = h * f(r)
+        v = vmitad + 0.5 * k
+        vmitad += k
+    return tp,xp,yp,Vp,Tp,Ep
+
+
+def bulirsch_Stoer_4(f: 'f(x,t)', r0: 'initial condition', a: 'initial point', b: 'end point',
+                         N: 'Number of points',delta : 'precision objetivo') -> 'ODE solution':
+    H = (b - a) / N
+    r = np.copy(r0)
+    tp = np.linspace(a, b, N)
+    xp = []
+    for t in tp:
+        xp.append(r[0])
+        n = 1
+        r1 = r + 0.5 * H * f(r)
+        r2 = r + H * f(r1)
+        R1 = np.empty([n, 2], float)
+        R1[0] = 0.5 * (r1 + r2 + 0.5 * H * f(r2))
+        error = 2 * H * delta
+        while error > H * delta:
+            n += 1
+            h = H / n
+            r1 = r + 0.5 * h * f(r)
+            r2 = r + h * f(r1)
+            for i in range(n - 1):
+                r1 += h * f(r2)
+                r2 += h * f(r1)
+            R2 = R1  
+            R1 = np.empty([n, 2], float)
+            R1[0] = 0.5 * (r1 + r2 + 0.5 * h * f(r2))
+            for m in range(1, n):
+                eps = (R1[m - 1] - R2[m - 1]) / ((n / (n - 1)) ** (2 * m) - 1)
+                R1[m] = R1[m - 1] + eps
+            error = abs(eps[0])
+            r = R1[n - 1]
+    return tp, np.array(xp)
+
+
