@@ -1,44 +1,30 @@
 """
 Practica 3a: Propagación ondas EM en el vacío
+
+Aplicar el metodo FCTS a las ecuaciones de Maxwell
 """
 import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Ejercicio 1: Como condiciones iniciales, vamos a considerar
-    𝐸𝑥(𝑧, 𝑡 = 0) = 𝐸0 sin(2𝜋𝑧) , 𝐻𝑦(𝑧, 𝑡 = 0) = 𝐻0 sin(2𝜋𝑧),
-donde 𝐸0 = 10 Vm−1 y 𝐻0 = 10 Am−1, consideraremos 𝑧 ∈ [0, 2].
-Representar las condiciones iniciales en 3 dimensiones, tomando 200 puntos equiespaciados.
-Añadir la leyenda a la representación para diferenciar los dos campos, y una línea negra para
-destacar el eje 𝑍.
+Ejercicio 1: Representar condiciones iniciales en 3D
 """
-
-# Número de puntos del espaciado en z
 n = 200
 
-# Definimos campo eléctrico inicial
-E0 = 10
-
-
+# Condiciones iniciales
 def E_inicial(z):
-    return E0 * np.sin(2 * np.pi * z)
-
-
-z = np.linspace(0, 2, n)
-Ex = E_inicial(z)
-
-# Definimos campo magnético inicial
-H0 = 10
-
+    return 10 * np.sin(2 * np.pi * z)
 
 def H_inicial(z):
-    return H0 * np.sin(2 * np.pi * z)
+    return 10 * np.sin(2 * np.pi * z)
 
-
+# Calculo de los campos
+z = np.linspace(0, 2, n)
+Ex = E_inicial(z)
 Hy = H_inicial(z)
-cer = np.zeros(n)
+cer = np.zeros(200) # línea negra para destacar el eje 𝑍
 
-# Realizamos el plot siguiendo las ayudas
+# Plot 3D
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 ax.plot(z, cer, Ex, label='Campo Eléctrico')
 ax.plot(z, Hy, cer, label='Campo Magnético')
@@ -49,10 +35,9 @@ plt.show()
 
 """
 Ejercicio 2: A partir de las ecuaciones discretizadas definir una función que tome los valores de 𝐸𝑥 y 𝐻𝑦 en el 
-eje 𝑍 en un tiempo 𝑡, y devuelva los valores de 𝐸𝑥 y 𝐻𝑦 en un tiempo 𝑡 + ℎ𝑡
+eje 𝑍 en un tiempo 𝑡, y devuelva los valores de 𝐸𝑥 y 𝐻𝑦 en un tiempo 𝑡 + ℎ𝑡 ->  que aplique FTCS
 """
 # Implementamos la evolución temporal
-
 beta = 0.25
 
 def maxwell(E,H):

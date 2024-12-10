@@ -43,11 +43,9 @@ rho[-26:, -26:, -26:] = -rho0
 delta = 1.0
 while delta > eps:
     # Calculamos los nuevos valores del potencial
-    phiprime[1:M, 1:M, 1:M] = (phi[0:M - 1, 1:M, 1:M] + phi[2:M + 1, 1:M, 1:M] + phi[1:M, 0:M - 1, 1:M] + phi[1:M,
-                                                                                                          2:M + 1,
-                                                                                                          1:M] +
-                               phi[1:M, 1:M, 0:M - 1] + phi[1:M, 1:M, 2:M + 1]) / 6 + rho[1:M, 1:M, 1:M] * a * a / (
-                                          6 * epsilon0)
+    phiprime[1:M, 1:M, 1:M] = ((phi[0:M - 1, 1:M, 1:M] + phi[2:M + 1, 1:M, 1:M] + phi[1:M, 0:M - 1, 1:M] +
+                               phi[1:M,2:M + 1,1:M] + phi[1:M, 1:M, 0:M - 1] + phi[1:M, 1:M, 2:M + 1]) / 6
+                               + rho[1:M, 1:M, 1:M] * a * a / (6 * epsilon0))
     # Estimamos el error como el máximo del cambio entre dos estimaciones consecutivas
     delta = np.max(abs(phi - phiprime))
     # Intercambiamos los dos arrays de phi
